@@ -21,7 +21,37 @@ def home():
     res = requests.get(url=URL)
     affirmation = res.json()["affirmation"]
     antifirmation = anti(affirmation)
-    return render_template("home.html", quote=antifirmation)
+    return render_template("home.html", quote=gen_text_bubble(antifirmation, limit=30))
+
+
+def gen_text_bubble(text, limit=100):
+    bubble_top = " " + "_" * (limit-2) + " "
+    bubble_bottom = " " + "-" * (limit-2) + "  "
+    lines = []
+    currline = ""
+
+    for word in text.split(" "):
+        if not currline:
+            currline = word
+            continue
+        if len(currline) + len(word) + 1>= (limit-2):
+            lines.append(currline)
+            currline = word
+        else:
+            currline += " " + word
+    if currline:
+        lines.append(currline)
+
+    for i in range(len(lines)):
+        right_padding = ((limit - 2 - len(lines[i])) // 2 + 1) * " "
+        left_padding = (limit - 2 - len(right_padding) - len(lines[i]) + 1) * " "
+        if i == 0:
+            lines[i] = "/" + right_padding + lines[i] + left_padding + "\\"
+        elif i == len(lines)-1:
+            lines[i] = "\\" + right_padding + lines[i] + left_padding + "/"
+        else:
+            lines[i] = "|" + right_padding + lines[i] + left_padding + "|"
+    return "\n".join([bubble_top] + lines + [bubble_bottom])
 
 
 def anti(affirmation):
